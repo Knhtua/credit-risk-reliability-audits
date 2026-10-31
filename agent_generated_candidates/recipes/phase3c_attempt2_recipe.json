@@ -1,0 +1,191 @@
+{
+  "recipe_version": "1.0",
+  "base_model": "lightgbm_binary",
+  "seed": 42,
+  "class_weight_mode": "train_ratio",
+  "engineered_features": [
+    {
+      "name": "LEV_TO_EQUITY",
+      "operator": "ratio_safe",
+      "inputs": [
+        "LEV_RATIO",
+        "EQUITY_RATIO"
+      ],
+      "epsilon": 0.01
+    },
+    {
+      "name": "INT_DEBT_LEV",
+      "operator": "ratio_safe",
+      "inputs": [
+        "INTEREST_DEBT_ASSET_RATIO",
+        "LEV_RATIO"
+      ],
+      "epsilon": 0.01
+    },
+    {
+      "name": "CURR_LA_RATIO",
+      "operator": "ratio_safe",
+      "inputs": [
+        "BALANCE_CUR_LA_TOT",
+        "BALANCE_CUR_ASSETS_TOT"
+      ],
+      "epsilon": 0.01
+    },
+    {
+      "name": "LIQ_CURR_CASH",
+      "operator": "ratio_safe",
+      "inputs": [
+        "CURRENT_RATIO",
+        "CASH_RATIO"
+      ],
+      "epsilon": 0.01
+    },
+    {
+      "name": "CASH_TO_CURR",
+      "operator": "ratio_safe",
+      "inputs": [
+        "CASH_RATIO",
+        "CURRENT_RATIO"
+      ],
+      "epsilon": 0.01
+    },
+    {
+      "name": "WC_INTENSITY",
+      "operator": "ratio_safe",
+      "inputs": [
+        "BALANCE_CUR_ASSETS_TOT",
+        "BALANCE_CUR_LA_TOT"
+      ],
+      "epsilon": 0.01
+    },
+    {
+      "name": "ROA_SLOG_ASSETS",
+      "operator": "ratio_safe",
+      "inputs": [
+        "PRETAX_ROA_ANNUALIZED",
+        "BALANCE_ASSETS_TOT_SLOG"
+      ],
+      "epsilon": 0.01
+    },
+    {
+      "name": "OPCASH_SLOG_INC",
+      "operator": "ratio_safe",
+      "inputs": [
+        "OP_CASHFLOW_ASSET_ANNUALIZED",
+        "INCOME_OP_INCM_TOT_SLOG"
+      ],
+      "epsilon": 0.01
+    },
+    {
+      "name": "ROA_SLOG_EQUITY",
+      "operator": "ratio_safe",
+      "inputs": [
+        "PRETAX_ROA_YTD",
+        "BALANCE_EQUITY_DERIVED_SLOG"
+      ],
+      "epsilon": 0.01
+    },
+    {
+      "name": "REVCFO_RATIO",
+      "operator": "ratio_safe",
+      "inputs": [
+        "REVENUE_ASSET_YTD",
+        "OP_CASHFLOW_ASSET_YTD"
+      ],
+      "epsilon": 0.01
+    },
+    {
+      "name": "RATING_UP_ONLY",
+      "operator": "max_zero_negative",
+      "inputs": [
+        "RATING_SCORE_CHANGE"
+      ]
+    },
+    {
+      "name": "RATING_AGE_INC",
+      "operator": "max_zero_negative",
+      "inputs": [
+        "RATING_AGE_DAYS_YOY_CHANGE"
+      ]
+    },
+    {
+      "name": "POS_OP_CASH",
+      "operator": "max_zero_negative",
+      "inputs": [
+        "OP_CASHFLOW_ASSET_YTD"
+      ]
+    },
+    {
+      "name": "POS_EQUITY_GROWTH",
+      "operator": "max_zero_negative",
+      "inputs": [
+        "EQUITY_RATIO_YOY_CHANGE"
+      ]
+    },
+    {
+      "name": "OUTLOOK_DUAL",
+      "operator": "product",
+      "inputs": [
+        "NEGATIVE_OUTLOOK_FLAG",
+        "WATCH_OUTLOOK_FLAG"
+      ]
+    },
+    {
+      "name": "OUTLOOK_SUM",
+      "operator": "sum",
+      "inputs": [
+        "NEGATIVE_OUTLOOK_FLAG",
+        "WATCH_OUTLOOK_FLAG"
+      ]
+    },
+    {
+      "name": "OUTLOOK_CLEAN",
+      "operator": "count_zero",
+      "inputs": [
+        "NEGATIVE_OUTLOOK_FLAG",
+        "WATCH_OUTLOOK_FLAG",
+        "LATEST_DOWNGRADE_FLAG"
+      ]
+    },
+    {
+      "name": "BAL_AVAIL",
+      "operator": "product",
+      "inputs": [
+        "HAS_BALANCE",
+        "BALANCE_ASSETS_TOT_SLOG"
+      ]
+    },
+    {
+      "name": "INC_AVAIL",
+      "operator": "product",
+      "inputs": [
+        "HAS_INCOME",
+        "INCOME_OP_INCM_TOT_SLOG"
+      ]
+    },
+    {
+      "name": "CF_AVAIL",
+      "operator": "product",
+      "inputs": [
+        "HAS_CASHFLOW",
+        "CASHFLOW_NET_CF_OP_SLOG"
+      ]
+    }
+  ],
+  "agent_rationale": "Phase 3C credit-downgrade recipe emits 20 engineered features across 5 domain groups: leverage-stress (LEV/equity, INT/LEV, CL/CA), liquidity-coverage (current/cash, CA/CL), profitability-to-size (ROA/OpCash/RevCFO over signed-log bases), rating-momentum (one-sided max_zero_negative), outlook composites (product/sum/count_zero), and availability-weighted signals (product HAS_* x slog). Operators are scale-invariant (ratio_safe eps=0.01), one-sided, count-based, non-chained, and restricted to the 230 permitted base features for temporal robustness across 2013-2018. class_weight_mode=train_ratio with objective=binary and metric=auc optimizes ROC-AUC/Gini under rare-downgrade imbalance. LightGBM hyperparameters (lr=0.03, num_leaves=31, n_estimators=2000, min_child_samples=50, reg_alpha=0.1, reg_lambda=0.1, feature_fraction=0.8, bagging_fraction=0.8, bagging_freq=5, min_data_in_leaf=20, seed=42) provide moderate capacity with regularization for the 111k-row training matrix.",
+  "model_hyperparameters": {
+    "objective": "binary",
+    "metric": "auc",
+    "learning_rate": 0.03,
+    "num_leaves": 31,
+    "n_estimators": 2000,
+    "min_child_samples": 50,
+    "reg_alpha": 0.1,
+    "reg_lambda": 0.1,
+    "feature_fraction": 0.8,
+    "bagging_fraction": 0.8,
+    "bagging_freq": 5,
+    "min_data_in_leaf": 20,
+    "verbosity": -1
+  }
+}

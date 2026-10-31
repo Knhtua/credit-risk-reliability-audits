@@ -1,0 +1,11 @@
+# Runtime dependencies for the published credit-risk reliability workflow.
+#
+# These versions were recorded from the Python 3.10.20 RD-Agent environment
+# used for the released workflow. They intentionally exclude unrelated
+# environment-level packages.
+numpy==2.2.6
+pandas==2.3.3
+scikit-learn==1.7.2
+lightgbm==4.7.0
+matplotlib==3.10.9
+jsonschema==4.26.0

@@ -1,0 +1,177 @@
+{
+  "recipe_version": "1.0",
+  "base_model": "lightgbm_binary",
+  "seed": 42,
+  "class_weight_mode": "train_ratio",
+  "engineered_features": [
+    {
+      "name": "LEV_TO_EQUITY_RATIO",
+      "operator": "ratio_safe",
+      "inputs": [
+        "LEV_RATIO",
+        "EQUITY_RATIO"
+      ],
+      "epsilon": 1e-06
+    },
+    {
+      "name": "LEV_MINUS_INTDEBT",
+      "operator": "difference",
+      "inputs": [
+        "LEV_RATIO",
+        "INTEREST_DEBT_ASSET_RATIO"
+      ]
+    },
+    {
+      "name": "OP_PROFIT_MARGIN",
+      "operator": "ratio_safe",
+      "inputs": [
+        "INCOME_OP_PROFIT",
+        "INCOME_OP_INCM_TOT"
+      ],
+      "epsilon": 1e-06
+    },
+    {
+      "name": "PROFIT_TO_ASSETS",
+      "operator": "ratio_safe",
+      "inputs": [
+        "INCOME_PROFIT_TOT",
+        "BALANCE_ASSETS_TOT"
+      ],
+      "epsilon": 1e-06
+    },
+    {
+      "name": "CASH_TO_STD",
+      "operator": "ratio_safe",
+      "inputs": [
+        "BALANCE_BANK_CASH",
+        "BALANCE_SHRT_TERM_BORR"
+      ],
+      "epsilon": 1e-06
+    },
+    {
+      "name": "CASH_TO_CURRENT",
+      "operator": "ratio_safe",
+      "inputs": [
+        "CASH_RATIO",
+        "CURRENT_RATIO"
+      ],
+      "epsilon": 1e-06
+    },
+    {
+      "name": "RATING_DROP_WITH_OUTLOOK",
+      "operator": "product",
+      "inputs": [
+        "RATING_SCORE_CHANGE",
+        "NEGATIVE_OUTLOOK_FLAG"
+      ]
+    },
+    {
+      "name": "RATING_NEGATIVE_CLIPPED",
+      "operator": "max_zero_negative",
+      "inputs": [
+        "RATING_SCORE_CHANGE",
+        "PREVIOUS_RATING_SCORE"
+      ]
+    },
+    {
+      "name": "OCF_TO_ASSETS",
+      "operator": "ratio_safe",
+      "inputs": [
+        "CASHFLOW_NET_CF_OP",
+        "BALANCE_ASSETS_TOT"
+      ],
+      "epsilon": 1e-06
+    },
+    {
+      "name": "ICF_TO_ASSETS",
+      "operator": "ratio_safe",
+      "inputs": [
+        "CASHFLOW_NET_CF_INVEST",
+        "BALANCE_ASSETS_TOT"
+      ],
+      "epsilon": 1e-06
+    },
+    {
+      "name": "LEV_TRAJECTORY",
+      "operator": "difference",
+      "inputs": [
+        "LEV_RATIO",
+        "LEV_RATIO_YOY_CHANGE"
+      ]
+    },
+    {
+      "name": "CURRENT_TRAJECTORY",
+      "operator": "difference",
+      "inputs": [
+        "CURRENT_RATIO",
+        "CURRENT_RATIO_YOY_CHANGE"
+      ]
+    },
+    {
+      "name": "EQUITY_TRAJECTORY",
+      "operator": "difference",
+      "inputs": [
+        "EQUITY_RATIO",
+        "EQUITY_RATIO_YOY_CHANGE"
+      ]
+    },
+    {
+      "name": "ROA_TRAJECTORY",
+      "operator": "difference",
+      "inputs": [
+        "PRETAX_ROA_YTD",
+        "PRETAX_ROA_ANNUALIZED_YOY_CHANGE"
+      ]
+    },
+    {
+      "name": "DQ_ZEROS_PRIMARY",
+      "operator": "count_zero",
+      "inputs": [
+        "FINANCIAL_MISSING_COUNT",
+        "HAS_ALL_FINANCIALS"
+      ]
+    },
+    {
+      "name": "DQ_ZEROS_HISTORY",
+      "operator": "count_zero",
+      "inputs": [
+        "HAS_PREVIOUS_RATING",
+        "HAS_YOY_COMPARISON"
+      ]
+    },
+    {
+      "name": "CUR_RATIO_SANITY",
+      "operator": "ratio_safe",
+      "inputs": [
+        "BALANCE_CUR_ASSETS_TOT",
+        "BALANCE_CUR_LA_TOT"
+      ],
+      "epsilon": 1e-06
+    },
+    {
+      "name": "NET_LIQUIDITY",
+      "operator": "sum",
+      "inputs": [
+        "BALANCE_BANK_CASH",
+        "BALANCE_SHRT_TERM_BORR"
+      ]
+    }
+  ],
+  "lightgbm_params": {
+    "objective": "binary",
+    "metric": "binary_logloss",
+    "num_leaves": 31,
+    "learning_rate": 0.05,
+    "n_estimators": 500,
+    "min_data_in_leaf": 50,
+    "feature_fraction": 0.8,
+    "bagging_fraction": 0.8,
+    "bagging_freq": 5,
+    "scale_pos_weight": 76.46814404432133,
+    "is_unbalance": false,
+    "lambda_l1": 0.1,
+    "lambda_l2": 0.1,
+    "verbose": -1
+  },
+  "agent_rationale": "This recipe specifies a LightGBM binary classifier for the rare-event credit-downgrade prediction target DOWNGRADE_6M on Phase 3 TRAIN data. \n\nBASE FEATURES (67 total): Selected from the 230 allowed base features to maximize predictive signal while removing collinear _SLOG and _YOY_GROWTH siblings. The selection covers six thematic blocks: (A) core financial ratios (leverage, equity, current/cash, interest-debt, pretax ROA); (B) raw balance-sheet, income-statement, and cash-flow magnitudes plus derived annualised forms; (C) rating scores, score change, and outlook/watch/downgrade/upgrade flags; (D) data-quality and freshness signals (source/missing counts, has-flags, age days); (E) two low-rank one-hot rank codes (CODE_2, CODE_10) representing the most downgrade-prone rank buckets; (F) YoY ratio deltas and YoY growth metrics used as inputs for engineered trajectory features. \n\nFEATURE SELECTION RULES: Three inclusion rules plus targeted exclusions. (A) Core ratio block (always included): LEV_RATIO, EQUITY_RATIO, CURRENT_RATIO, CASH_RATIO, INTEREST_DEBT_ASSET_RATIO, PRETAX_ROA_YTD. (B) Raw-magnitude block (included; their _SLOG and _YOY_GROWTH siblings excluded to avoid collinearity): BALANCE_ASSETS_TOT, BALANCE_LA_TOT, BALANCE_CUR_ASSETS_TOT, BALANCE_CUR_LA_TOT, BALANCE_BANK_CASH, BALANCE_INVENTORY, BALANCE_RCV_ACCT, BALANCE_SHRT_TERM_BORR, BALANCE_LONG_TERM_BORR, BALANCE_PY_BONDS, INCOME_OP_INCM_TOT, INCOME_OP_INCM, INCOME_OP_PROFIT, INCOME_PROFIT_TOT, INCOME_LESS_INT_EXP, INCOME_LESS_FIN_EXP, CASHFLOW_NET_CF_OP, CASHFLOW_NET_CF_INVEST, CASHFLOW_NET_CF_FNC, CASHFLOW_CASH_EQU_END_PRD, CASHFLOW_CASH_PY_REPAY_DEBT, and derived-ratio denominators/numerators/annualized forms. (C) Rating/outlook block: CURRENT_RATING_SCORE, PREVIOUS_RATING_SCORE, RATING_SCORE_CHANGE, HAS_PREVIOUS_RATING, NEGATIVE_OUTLOOK_FLAG, WATCH_OUTLOOK_FLAG, LATEST_DOWNGRADE_FLAG, LATEST_UPGRADE_FLAG. (D) Data-quality block: FINANCIAL_SOURCE_COUNT, FINANCIAL_MISSING_COUNT, HAS_ALL_FINANCIALS, MAX_FINANCIAL_AGE_DAYS, MEAN_FINANCIAL_AGE_DAYS, HAS_BALANCE, HAS_INCOME, HAS_CASHFLOW, HAS_YOY_COMPARISON, RATING_AGE_DAYS, BALANCE_AGE_DAYS, INCOME_AGE_DAYS, CASHFLOW_AGE_DAYS. (E) One-hot rank block: only CTRL_OHE_CURRENT_RANK__CODE_2 and CTRL_OHE_CURRENT_RANK__CODE_10 (low-rank tail buckets most predictive of downgrade). (F) YoY ratio deltas and YoY growth metrics: LEV_RATIO_YOY_CHANGE, EQUITY_RATIO_YOY_CHANGE, CURRENT_RATIO_YOY_CHANGE, CASH_RATIO_YOY_CHANGE, INTEREST_DEBT_ASSET_RATIO_YOY_CHANGE, PRETAX_ROA_ANNUALIZED_YOY_CHANGE, OP_CASHFLOW_ASSET_ANNUALIZED_YOY_CHANGE, BALANCE_ASSETS_TOT_YOY_GROWTH, BALANCE_EQUITY_DERIVED_YOY_GROWTH, INCOME_PROFIT_TOT_YOY_GROWTH, CASHFLOW_NET_CF_OP_YOY_GROWTH. After construction: deduplicate, intersect with the 230 allowed names, intersect with agent_recipe_input_allowed=True, exclude forbidden_inputs, target set size in [60, 80]. \n\nENGINEERED FEATURES (18 total): Grouped by credit-risk dimension. (1) Leverage: LEV_TO_EQUITY_RATIO, LEV_MINUS_INTDEBT. (2) Profitability: OP_PROFIT_MARGIN, PROFIT_TO_ASSETS. (3) Liquidity: CASH_TO_STD, CASH_TO_CURRENT, CUR_RATIO_SANITY, NET_LIQUIDITY. (4) Rating dynamics: RATING_DROP_WITH_OUTLOOK, RATING_NEGATIVE_CLIPPED. (5) Cash flow and trajectories: OCF_TO_ASSETS, ICF_TO_ASSETS, LEV_TRAJECTORY, CURRENT_TRAJECTORY, EQUITY_TRAJECTORY, ROA_TRAJECTORY, DQ_ZEROS_PRIMARY, DQ_ZEROS_HISTORY. All use only base-feature inputs (no chaining) for full traceability. \n\nLIGHTGBM HYPERPARAMETERS: num_leaves=31 with min_data_in_leaf=50 prevents leaf overfitting on the rare positive class. feature_fraction=0.8 and bagging_fraction=0.8 with bagging_freq=5 provide stochastic regularization. lambda_l1=lambda_l2=0.1 suppress weak splits. learning_rate=0.05 with n_estimators=500 balances training cost and capacity. scale_pos_weight set to training-label balance ratio (n_neg/max(n_pos,1)) with is_unbalance=False to avoid double correction. No early stopping is configured because the controller's locked training procedure doe"
+}

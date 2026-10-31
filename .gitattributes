@@ -1,0 +1,4 @@
+data/train.csv filter=lfs diff=lfs merge=lfs -text
+data/test.csv filter=lfs diff=lfs merge=lfs -text
+*.pdf binary
+*.pptx binary

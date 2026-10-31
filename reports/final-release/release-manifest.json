@@ -1,0 +1,26 @@
+{
+  "release_name": "bond_credit_risk_reliability_study_english_public_release",
+  "release_version": "english_public_v1",
+  "release_status": "FROZEN",
+  "page_count": 24,
+  "primary_phase3e_result": "3/15",
+  "primary_phase3e_pass_rate": 0.2,
+  "phase3d_claim": "Compliant controller-normalized RD-Agent candidate recovered; unaided one-shot success and predictive improvement not established.",
+  "visual_acceptance": "PASS",
+  "structural_audit": "PASS_AFTER_WHITESPACE_NORMALIZATION_CORRECTION",
+  "performance_metrics_used_for_phase3e_endpoint": false,
+  "files": {
+    "pdf": {
+      "name": "bond-credit-risk-reliability-report.pdf",
+      "sha256": "8ae61fd92dfd5877639ac57c305b2deffc8c5cf99e55ca0d7664615ff567fd76"
+    },
+    "presentation": {
+      "name": "bond-credit-risk-reliability-presentation.pptx",
+      "sha256": "bdbcdda0509762d9642dcf95eaf1ab193e5df951808f416cc00ddc7d5556478c"
+    },
+    "phase3e_result": {
+      "name": "phase3e-final-result.json",
+      "sha256": "4d228d1f7932194634020e9dea75457b001e53eb64f43f2725d8cb2d1c78da93"
+    }
+  }
+}

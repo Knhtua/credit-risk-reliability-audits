@@ -1,0 +1,190 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "phase3c-agent-model-recipe-v1.0",
+  "title": "Phase 3C Controller-mediated RD-Agent Model Recipe",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "recipe_version",
+    "base_model",
+    "seed",
+    "class_weight_mode",
+    "engineered_features",
+    "lightgbm_params",
+    "agent_rationale"
+  ],
+  "properties": {
+    "recipe_version": {
+      "const": "1.0"
+    },
+    "base_model": {
+      "const": "lightgbm_binary"
+    },
+    "seed": {
+      "const": 42
+    },
+    "class_weight_mode": {
+      "enum": [
+        "none",
+        "train_ratio"
+      ]
+    },
+    "engineered_features": {
+      "type": "array",
+      "maxItems": 20,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "operator",
+          "inputs"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]{2,63}$"
+          },
+          "operator": {
+            "enum": [
+              "sum",
+              "difference",
+              "product",
+              "ratio_safe",
+              "max_zero_negative",
+              "count_zero"
+            ]
+          },
+          "inputs": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 10,
+            "items": {
+              "type": "string"
+            }
+          },
+          "epsilon": {
+            "type": "number",
+            "minimum": 1e-12,
+            "maximum": 0.1
+          }
+        }
+      }
+    },
+    "lightgbm_params": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "learning_rate",
+        "num_leaves",
+        "max_depth",
+        "min_child_samples",
+        "feature_fraction",
+        "bagging_fraction",
+        "bagging_freq",
+        "lambda_l1",
+        "lambda_l2",
+        "max_bin"
+      ],
+      "properties": {
+        "learning_rate": {
+          "type": "number",
+          "minimum": 0.005,
+          "maximum": 0.1
+        },
+        "num_leaves": {
+          "type": "integer",
+          "minimum": 7,
+          "maximum": 127
+        },
+        "max_depth": {
+          "type": "integer",
+          "minimum": -1,
+          "maximum": 12
+        },
+        "min_child_samples": {
+          "type": "integer",
+          "minimum": 20,
+          "maximum": 1000
+        },
+        "feature_fraction": {
+          "type": "number",
+          "minimum": 0.5,
+          "maximum": 1.0
+        },
+        "bagging_fraction": {
+          "type": "number",
+          "minimum": 0.5,
+          "maximum": 1.0
+        },
+        "bagging_freq": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10
+        },
+        "lambda_l1": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 50.0
+        },
+        "lambda_l2": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 50.0
+        },
+        "max_bin": {
+          "type": "integer",
+          "minimum": 31,
+          "maximum": 511
+        }
+      }
+    },
+    "agent_rationale": {
+      "type": "string",
+      "minLength": 20,
+      "maxLength": 4000
+    }
+  },
+  "x_phase3c_rules": {
+    "base_feature_allowlist_sha256": "0beb0b23e91f107eda20159db866eb5b07377585a2e05005d2a6a8e50d4d6d86",
+    "base_feature_count": 230,
+    "engineered_inputs_must_be_base_features": true,
+    "engineered_feature_chaining_allowed": false,
+    "duplicate_engineered_names_allowed": false,
+    "engineered_name_may_not_shadow_base_feature": true,
+    "forbidden_inputs": [
+      "ROW_ID",
+      "DOWNGRADE_6M"
+    ],
+    "operator_input_counts": {
+      "sum": {
+        "minimum": 2,
+        "maximum": 10
+      },
+      "difference": {
+        "exactly": 2
+      },
+      "product": {
+        "minimum": 2,
+        "maximum": 10
+      },
+      "ratio_safe": {
+        "exactly": 2,
+        "epsilon_required": true
+      },
+      "max_zero_negative": {
+        "exactly": 1
+      },
+      "count_zero": {
+        "minimum": 2,
+        "maximum": 10
+      }
+    },
+    "epsilon_allowed_only_for": [
+      "ratio_safe"
+    ],
+    "all_lightgbm_parameters_required": true,
+    "controller_owns_seed_parameters": true,
+    "controller_owns_objective_and_metric": true
+  }
+}

@@ -1,0 +1,40 @@
+# Credentials and local configuration
+.env
+.env.*
+*.key
+*.pem
+
+# Source data, labels, predictions, and database exports
+data/
+private/
+exports/
+*.csv
+*.parquet
+*.xlsx
+*.xls
+*.npz
+*.npy
+*.pkl
+
+# Curated task documentation retained with the released panels
+!data/
+!data/description.md
+!data/modeling_feature_manifest.csv
+
+# Generated experiment outputs
+results/
+figures/
+reports/generated/
+logs/
+run_artifacts/
+*.png
+*.pdf
+!reports/*.pdf
+
+# Python and local environments
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+.DS_Store

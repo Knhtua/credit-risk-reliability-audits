@@ -1,0 +1,38 @@
+{
+  "conclusion": "RD-Agent achieved first-candidate structural compliance in 3 of 15 primary-evaluable runs.",
+  "endpoint": "FIRST_RAW_CANDIDATE_STRUCTURAL_COMPLIANCE",
+  "failure_category_counts": {
+    "EPSILON_FORBIDDEN": 1,
+    "LIGHTGBM_PARAMETER_CONTRACT_VIOLATIONS": 1,
+    "MULTIPLE_SCHEMA_CONTRACT_VIOLATIONS": 2,
+    "OUTPUT_LOCATION_CONTRACT_VIOLATION": 1,
+    "RAW_CODE_SYNTAX_ERROR": 3,
+    "RECIPE_VERSION_SCHEMA_VIOLATION": 1,
+    "SCHEMA_CONST_MISMATCH": 1,
+    "SCHEMA_VALIDATION_ABORT_BEFORE_OUTPUT": 2
+  },
+  "formal_launches": 18,
+  "ineligible_formal_launches": 3,
+  "ineligible_run_ids": [
+    "run_001",
+    "run_002",
+    "run_010"
+  ],
+  "outcomes_used_as_stopping_basis": false,
+  "performance_metrics_used": false,
+  "primary_evaluable_runs": 15,
+  "primary_failures": 12,
+  "primary_pass_rate": 0.2,
+  "primary_successes": 3,
+  "record_type": "phase3e_final_result",
+  "successful_run_ids": [
+    "run_005",
+    "run_007",
+    "run_018"
+  ],
+  "version": "1.0",
+  "wilson_95_ci": {
+    "lower": 0.07047549346981563,
+    "upper": 0.45185448715169363
+  }
+}
